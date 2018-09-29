@@ -29,11 +29,11 @@
 
 /* own headers */
 #ifdef _MSC_VER
-#include <uuid_msvc.h>
+#include "uuid_msvc.h"
 #else
 #include "uuid.h"
 #endif
-#include <uuid_ac.h>
+#include "uuid_ac.h"
 
 /* system headers */
 #include <stdio.h>

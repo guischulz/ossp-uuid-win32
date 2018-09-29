@@ -131,7 +131,7 @@
 
 /* Define if va_copy() macro exists (and no fallback implementation is
    required) */
-/* #undef HAVE_VA_COPY */
+#define HAVE_VA_COPY 1
 
 /* Define to the sub-directory in which libtool stores uninstalled libraries.
    */
