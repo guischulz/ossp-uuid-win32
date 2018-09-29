@@ -30,6 +30,11 @@
 #ifndef __MD5_H___
 #define __MD5_H___
 
+/* matthklo: c++ compatible */
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <string.h> /* size_t */
 
 #define MD5_PREFIX uuid_
@@ -71,6 +76,11 @@ extern md5_rc_t md5_update  (md5_t  *md5, const void  *data_ptr, size_t  data_le
 extern md5_rc_t md5_store   (md5_t  *md5,       void **data_ptr, size_t *data_len);
 extern md5_rc_t md5_format  (md5_t  *md5,       char **data_ptr, size_t *data_len);
 extern md5_rc_t md5_destroy (md5_t  *md5);
+
+/* matthklo: c++ compatible */
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __MD5_H___ */
 

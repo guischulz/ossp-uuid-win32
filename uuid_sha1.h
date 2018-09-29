@@ -30,6 +30,11 @@
 #ifndef __SHA1_H___
 #define __SHA1_H___
 
+/* matthklo: c++ compatible */
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <string.h> /* size_t */
 
 #define SHA1_PREFIX uuid_
@@ -72,6 +77,11 @@ extern sha1_rc_t sha1_update  (sha1_t  *sha1, const void  *data_ptr, size_t  dat
 extern sha1_rc_t sha1_store   (sha1_t  *sha1,       void **data_ptr, size_t *data_len);
 extern sha1_rc_t sha1_format  (sha1_t  *sha1,       char **data_ptr, size_t *data_len);
 extern sha1_rc_t sha1_destroy (sha1_t  *sha1);
+
+/* matthklo: c++ compatible */
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __SHA1_H___ */
 

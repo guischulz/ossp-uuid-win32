@@ -41,7 +41,11 @@
 #undef uuid_hash
 
 /* include regular API */
+#ifdef _MSC_VER
+#include "uuid_msvc.h"
+#else
 #include "uuid.h"
+#endif
 
 /* helper macro */
 #define LEAVE /*lint -save -e801*/ goto leave /*lint -restore*/

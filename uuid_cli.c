@@ -28,16 +28,61 @@
 */
 
 /* own headers */
+#ifdef _MSC_VER
+#include <uuid_msvc.h>
+#else
 #include "uuid.h"
-#include "uuid_ac.h"
+#endif
+#include <uuid_ac.h>
 
 /* system headers */
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
+#endif
 #include <string.h>
 #include <errno.h>
+
+#ifdef _MSC_VER
+#define strcasecmp stricmp
+#define strncasecmp  strnicmp 
+
+static char *optarg;
+static int optind, opterr, optopt;
+
+// A simple implementation of posix getopt(). Just cover the usecases used in this program.
+// Not recommanded using outside of this program.
+static int getopt(int argc, char * const argv[], const char *optstring)
+{
+    char ret;
+    const char *ptr;
+    if (optind <=0 ) optind = 1;
+
+    if (optind >= argc) return -1;
+
+    if (argv[optind][0] != '-') return -1;
+
+    optopt = argv[optind][1];
+    ptr = strchr(optstring, optopt);
+    if (ptr) {
+        int advance = 1;
+        // peek if it is paired argument
+        if (*(ptr+1) == ':') {
+            optarg = argv[optind+1];
+            advance++;
+        } else {
+            optarg = NULL;
+        }
+        ret = optopt;
+        optind += advance;
+    } else {
+        ret = '?';
+    }
+    return ret;
+}
+#endif
 
 /* error handler */
 static void

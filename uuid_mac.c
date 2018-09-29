@@ -34,7 +34,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
+#endif
 #include <fcntl.h>
 #include <time.h>
 #ifdef HAVE_SYS_TIME_H
@@ -77,6 +79,12 @@
 #include <ifaddrs.h>
 #endif
 
+#ifdef _MSC_VER
+#include <windows.h>
+#include <IPHlpApi.h>
+#pragma comment ( lib, "iphlpapi.lib" )
+#endif
+
 /* own headers (part (1/2) */
 #include "uuid_mac.h"
 
@@ -94,6 +102,24 @@ int mac_address(unsigned char *data_ptr, size_t data_len)
     /* sanity check arguments */
     if (data_ptr == NULL || data_len < MAC_LEN)
         return FALSE;
+
+#ifdef _MSC_VER
+    {
+        IP_ADAPTER_INFO AdapterInfo[16];
+        DWORD dwBufLen = sizeof(AdapterInfo);
+        DWORD dwStatus = GetAdaptersInfo(AdapterInfo, &dwBufLen);
+        if (ERROR_SUCCESS == dwStatus) {
+            int i;
+            PIP_ADAPTER_INFO pAdapterInfo = AdapterInfo;
+            unsigned int len = pAdapterInfo->AddressLength;
+            for (i=0; i<MAC_LEN; ++i) {
+                data_ptr[i] = pAdapterInfo->Address[i];
+            }
+            return TRUE;
+        }
+    }
+    return FALSE;
+#endif
 
 #if defined(HAVE_IFADDRS_H) && defined(HAVE_NET_IF_DL_H) && defined(HAVE_GETIFADDRS)
     /* use getifaddrs(3) on BSD class platforms (xxxBSD, MacOS X, etc) */

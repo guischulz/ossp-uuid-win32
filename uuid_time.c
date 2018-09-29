@@ -32,7 +32,9 @@
 
 /* system headers */
 #include <stdlib.h>
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
+#endif
 #include <time.h>
 #ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>

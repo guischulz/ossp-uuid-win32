@@ -33,14 +33,28 @@
 /* system headers */
 #include <stdlib.h>
 #include <string.h>
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
+#endif
 #include <time.h>
+#ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
+#endif
 #include <fcntl.h>
 #if defined(WIN32)
 #define WINVER 0x0500
 #include <windows.h>
 #include <wincrypt.h>
+#include <process.h>
+#define ALREADY_HAVE_STRUCT_TIMEVAL 1
+typedef unsigned int pid_t;
+
+// Dummy implementations of read() & close()
+// They're used to shush compiler from nagging, and they
+// never be called since the prng->dev should always be -1
+// on a win32 platform.
+static size_t read(int d, void* p, size_t n) { return 0; }
+static void close(int d) { return; }
 #endif
 
 /* own headers (part 2/2) */
@@ -93,7 +107,11 @@ prng_rc_t prng_create(prng_t **prng)
 
     /* seed the C library PRNG once */
     (void)time_gettimeofday(&tv);
+#ifdef _MSC_VER
+    pid = _getpid();
+#else
     pid = getpid();
+#endif
     srand((unsigned int)(
         ((unsigned int)pid << 16)
         ^ (unsigned int)pid

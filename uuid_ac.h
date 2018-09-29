@@ -31,14 +31,20 @@
 #define __UUID_AC_H__
 
 /* include GNU autoconf results */
+#ifndef _WIN32
 #include "config.h"           /* HAVE_xxx */
+#else
+#include "config_msvc.h"
+#endif
 
 /* include standard system headers */
 #include <stdio.h>            /* NULL, etc. */
 #include <stdlib.h>           /* malloc, NULL, etc. */
 #include <stdarg.h>           /* va_list, etc. */
 #include <string.h>           /* size_t, strlen, etc. */
+#ifndef _WIN32
 #include <unistd.h>           /* dmalloc pre-loading */
+#endif
 
 /* enable optional "dmalloc" support */
 #ifdef WITH_DMALLOC

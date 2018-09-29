@@ -28,7 +28,11 @@
 */
 
 /* own headers (part 1/2) */
+#ifdef _MSC_VER
+#include "uuid_msvc.h"
+#else
 #include "uuid.h"
+#endif
 #include "uuid_ac.h"
 
 /* system headers */
@@ -36,11 +40,15 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
+#endif
 #include <ctype.h>
 #include <fcntl.h>
 #include <time.h>
+#ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
+#endif
 #include <sys/types.h>
 
 /* own headers (part 2/2) */

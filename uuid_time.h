@@ -71,7 +71,9 @@
 DECLARATION_BEGIN
 
 #ifndef HAVE_STRUCT_TIMEVAL
+#ifndef ALREADY_HAVE_STRUCT_TIMEVAL
 struct timeval { long tv_sec; long tv_usec; };
+#endif
 #endif
 
 extern int time_gettimeofday(struct timeval *);
