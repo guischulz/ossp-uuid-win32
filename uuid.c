@@ -951,17 +951,17 @@ static uuid_rc_t uuid_make_v1(uuid_t *uuid, unsigned int mode, va_list ap)
     clck = ((uuid->obj.clock_seq_hi_and_reserved & BM_MASK(5,0)) << 8)
            + uuid->obj.clock_seq_low;
 
-    /* generate new random clock sequence (initially or if the
-       time has stepped backwards) or else just increase it */
-    if (   clck == 0
-        || (   time_now.tv_sec < uuid->time_last.tv_sec
-            || (   time_now.tv_sec == uuid->time_last.tv_sec
-                && time_now.tv_usec < uuid->time_last.tv_usec))) {
+    /* generate new random clock sequence initially */
+    if (clck == 0)
         if (prng_data(uuid->prng, (void *)&clck, sizeof(clck)) != PRNG_RC_OK)
             return UUID_RC_INT;
-    }
-    else
+
+    /* increase clock sequence if the time has stepped backwards */
+    if (time_now.tv_sec < uuid->time_last.tv_sec
+        || (   time_now.tv_sec == uuid->time_last.tv_sec
+            && time_now.tv_usec < uuid->time_last.tv_usec))
         clck++;
+
     clck %= BM_POW2(14);
 
     /* store back new clock sequence */
