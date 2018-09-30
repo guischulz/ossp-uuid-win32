@@ -66,7 +66,14 @@
 
 /* maximum number of 100ns ticks of the actual resolution of system clock
    (which in our case is 1us (= 1000ns) because we use gettimeofday(2) */
+#if defined(WIN32)
+/* On Windows we assume a low system clock resolution of only 10ms, because
+   we want fast uuid generation even on virtual machines where the clock
+   is not updated frequently */
+#define UUIDS_PER_TICK 100000
+#else
 #define UUIDS_PER_TICK 10
+#endif
 
 /* time offset between UUID and Unix Epoch time according to standards.
    (UUID UTC base time is October 15, 1582
@@ -896,6 +903,9 @@ static uuid_rc_t uuid_make_v1(uuid_t *uuid, unsigned int mode, va_list ap)
         /* determine current system time */
         if (time_gettimeofday(&time_now) == -1)
             return UUID_RC_SYS;
+
+        /* round time according to the assumed system clock resolution */
+        time_now.tv_usec = (time_now.tv_usec / (UUIDS_PER_TICK/10)) * (UUIDS_PER_TICK/10);
 
         /* check whether system time changed since last retrieve */
         if (!(   time_now.tv_sec  == uuid->time_last.tv_sec
