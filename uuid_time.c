@@ -49,6 +49,26 @@
 /* own headers (part (1/2) */
 #include "uuid_time.h"
 
+#if defined(WIN32)
+BOOLEAN win32_usleep(LONGLONG usec)
+{
+    static HANDLE timer = NULL;
+    LARGE_INTEGER li;
+
+    if (!timer)
+        if (!(timer = CreateWaitableTimer(NULL, TRUE, NULL)))
+            return FALSE;
+    li.QuadPart = usec * -10;
+    if (!SetWaitableTimer(timer, &li, 0, NULL, NULL, FALSE)) {
+        CloseHandle(timer);
+        timer = NULL;
+        return FALSE;
+    }
+    WaitForSingleObject(timer, INFINITE);
+    return TRUE;
+}
+#endif
+
 /* POSIX gettimeofday(2) abstraction (without timezone) */
 int time_gettimeofday(struct timeval *tv)
 {
@@ -70,7 +90,6 @@ int time_gettimeofday(struct timeval *tv)
     FILETIME ft;
     LARGE_INTEGER li;
     __int64 t;
-    static int tzflag;
 #if !defined(__GNUC__)
 #define EPOCHFILETIME 116444736000000000i64
 #else
@@ -80,9 +99,9 @@ int time_gettimeofday(struct timeval *tv)
         GetSystemTimeAsFileTime(&ft);
         li.LowPart  = ft.dwLowDateTime;
         li.HighPart = ft.dwHighDateTime;
-        t  = li.QuadPart;
-        t -= EPOCHFILETIME;
-        t /= 10;
+        t = li.QuadPart;    /* In 100-nanosecond intervals */
+        t -= EPOCHFILETIME; /* Offset to the Epoch time */
+        t /= 10;            /* In microseconds */
         tv->tv_sec  = (long)(t / 1000000);
         tv->tv_usec = (long)(t % 1000000);
     }
@@ -95,12 +114,9 @@ int time_gettimeofday(struct timeval *tv)
 /* BSD usleep(3) abstraction */
 int time_usleep(long usec)
 {
-#if defined(WIN32) && defined(HAVE_SLEEP)
-    /* Win32 newer Sleep(3) variant */
-    Sleep(usec / 1000);
-#elif defined(WIN32)
-    /* Win32 older _sleep(3) variant */
-    _sleep(usec / 1000);
+#if defined(WIN32)
+    /* Win32 WaitableTimer variant */
+    win32_usleep(usec);
 #elif defined(HAVE_NANOSLEEP)
     /* POSIX newer nanosleep(3) variant */
     struct timespec ts;
