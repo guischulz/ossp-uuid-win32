@@ -80,9 +80,12 @@
 #endif
 
 #ifdef _MSC_VER
-#include <windows.h>
-#include <IPHlpApi.h>
-#pragma comment ( lib, "iphlpapi.lib" )
+#include <stdio.h>
+#include <winsock2.h>
+#include <iphlpapi.h>
+#include <ws2tcpip.h>
+#pragma comment(lib, "ws2_32.lib")
+#pragma comment(lib, "iphlpapi.lib")
 #endif
 
 /* own headers (part (1/2) */
@@ -104,21 +107,41 @@ int mac_address(unsigned char *data_ptr, size_t data_len)
         return FALSE;
 
 #ifdef _MSC_VER
+#define WORKING_BUFFER_SIZE 15000
+    /* use GetAdaptersAddresses() on Windows class platforms */
     {
-        IP_ADAPTER_INFO AdapterInfo[16];
-        DWORD dwBufLen = sizeof(AdapterInfo);
-        DWORD dwStatus = GetAdaptersInfo(AdapterInfo, &dwBufLen);
-        if (ERROR_SUCCESS == dwStatus) {
-            int i;
-            PIP_ADAPTER_INFO pAdapterInfo = AdapterInfo;
-            unsigned int len = pAdapterInfo->AddressLength;
-            for (i=0; i<MAC_LEN; ++i) {
-                data_ptr[i] = pAdapterInfo->Address[i];
-            }
-            return TRUE;
+        int result = FALSE;
+        ULONG dwStatus = 0;
+        ULONG outBufLen = 0;
+        ULONG flags = GAA_FLAG_SKIP_ANYCAST | GAA_FLAG_SKIP_MULTICAST | GAA_FLAG_SKIP_DNS_SERVER;
+        PIP_ADAPTER_ADDRESSES pAddresses = NULL;
+        PIP_ADAPTER_ADDRESSES pCurrAddresses = NULL;
+
+        outBufLen = WORKING_BUFFER_SIZE;
+        pAddresses = (PIP_ADAPTER_ADDRESSES)malloc(WORKING_BUFFER_SIZE);
+        dwStatus = GetAdaptersAddresses(AF_UNSPEC, flags, NULL, pAddresses, &outBufLen);
+
+        if (dwStatus == ERROR_BUFFER_OVERFLOW) {
+            if (pAddresses)
+                free(pAddresses);
+            pAddresses = (PIP_ADAPTER_ADDRESSES)malloc(outBufLen);
+            dwStatus = GetAdaptersAddresses(AF_UNSPEC, flags, NULL, pAddresses, &outBufLen);
         }
+        if (dwStatus == NO_ERROR) {
+            for (pCurrAddresses = pAddresses; pCurrAddresses != NULL; pCurrAddresses = pCurrAddresses->Next) {
+                if (pCurrAddresses->PhysicalAddressLength = MAC_LEN) {
+                    for (int i = 0; i < MAC_LEN; ++i)
+                        data_ptr[i] = pCurrAddresses->PhysicalAddress[i];
+                    result = TRUE;
+                    break;
+                }
+            }
+        }
+        if (pAddresses)
+            free(pAddresses);
+
+        return result;
     }
-    return FALSE;
 #endif
 
 #if defined(HAVE_IFADDRS_H) && defined(HAVE_NET_IF_DL_H) && defined(HAVE_GETIFADDRS)
