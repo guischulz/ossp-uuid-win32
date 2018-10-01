@@ -10,6 +10,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "uuid_cli", "uuid_cli\uuid_c
 		{70A5A0AD-0506-4C42-8643-73A077F9F07B} = {70A5A0AD-0506-4C42-8643-73A077F9F07B}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "example", "example\example.vcxproj", "{0668331D-1734-4FA7-8E59-EB66B2EA148B}"
+	ProjectSection(ProjectDependencies) = postProject
+		{70A5A0AD-0506-4C42-8643-73A077F9F07B} = {70A5A0AD-0506-4C42-8643-73A077F9F07B}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -24,6 +29,10 @@ Global
 		{9EF255FD-DF32-47F0-96D4-D52BF51C7ACD}.Debug|x64.Build.0 = Debug|x64
 		{9EF255FD-DF32-47F0-96D4-D52BF51C7ACD}.Release|x64.ActiveCfg = Release|x64
 		{9EF255FD-DF32-47F0-96D4-D52BF51C7ACD}.Release|x64.Build.0 = Release|x64
+		{0668331D-1734-4FA7-8E59-EB66B2EA148B}.Debug|x64.ActiveCfg = Debug|x64
+		{0668331D-1734-4FA7-8E59-EB66B2EA148B}.Debug|x64.Build.0 = Debug|x64
+		{0668331D-1734-4FA7-8E59-EB66B2EA148B}.Release|x64.ActiveCfg = Release|x64
+		{0668331D-1734-4FA7-8E59-EB66B2EA148B}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
