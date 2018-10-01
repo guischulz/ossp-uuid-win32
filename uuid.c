@@ -148,17 +148,17 @@ uuid_rc_t uuid_create(uuid_t **uuid)
         return UUID_RC_INT;
     }
 
-    /* resolve MAC address for insertion into node field of UUIDs */
-    if (!mac_address((unsigned char *)(obj->mac), sizeof(obj->mac))) {
-        memset(obj->mac, 0, sizeof(obj->mac));
-        obj->mac[0] = BM_OCTET(1,0,0,0,0,0,0,0);
-    }
-
     /* generate random IEEE 802 local multicast MAC address */
     if (prng_data(obj->prng, (void *)(obj->mac_mc), sizeof(obj->mac_mc)) != PRNG_RC_OK)
         return UUID_RC_INT;
     obj->mac_mc[0] |= IEEE_MAC_MCBIT;
     obj->mac_mc[0] |= IEEE_MAC_LOBIT;
+
+    /* resolve MAC address for insertion into node field of UUIDs */
+    if (!mac_address((unsigned char *)(obj->mac), sizeof(obj->mac))) {
+        /* Use random MAC address if a real MAC address is not detected */
+        memcpy(obj->mac, obj->mac_mc, sizeof(obj->mac_mc));
+    }
 
     /* initialize time attributes */
     obj->time_last.tv_sec  = 0;
@@ -992,7 +992,7 @@ static uuid_rc_t uuid_make_v1(uuid_t *uuid, unsigned int mode, va_list ap)
      *  GENERATE NODE
      */
 
-    if ((mode & UUID_MAKE_MC) || (uuid->mac[0] & BM_OCTET(1,0,0,0,0,0,0,0))) {
+    if (mode & UUID_MAKE_MC) {
         /* use random IEEE 802 local multicast MAC address */
         memcpy(uuid->obj.node, uuid->mac_mc, sizeof(uuid->mac));
     }
