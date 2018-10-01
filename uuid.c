@@ -104,6 +104,7 @@ struct uuid_st {
     md5_t         *md5;                       /* MD5 sub-object */
     sha1_t        *sha1;                      /* SHA-1 sub-object */
     uuid_uint8_t   mac[IEEE_MAC_OCTETS];      /* pre-determined MAC address */
+    uuid_uint8_t   mac_mc[IEEE_MAC_OCTETS];   /* pre-determined random IEEE 802 local multicast MAC address */
     struct timeval time_last;                 /* last retrieved timestamp */
     unsigned long  time_seq;                  /* last timestamp sequence counter */
 };
@@ -152,6 +153,12 @@ uuid_rc_t uuid_create(uuid_t **uuid)
         memset(obj->mac, 0, sizeof(obj->mac));
         obj->mac[0] = BM_OCTET(1,0,0,0,0,0,0,0);
     }
+
+    /* generate random IEEE 802 local multicast MAC address */
+    if (prng_data(obj->prng, (void *)(obj->mac_mc), sizeof(obj->mac_mc)) != PRNG_RC_OK)
+        return UUID_RC_INT;
+    obj->mac_mc[0] |= IEEE_MAC_MCBIT;
+    obj->mac_mc[0] |= IEEE_MAC_LOBIT;
 
     /* initialize time attributes */
     obj->time_last.tv_sec  = 0;
@@ -986,11 +993,8 @@ static uuid_rc_t uuid_make_v1(uuid_t *uuid, unsigned int mode, va_list ap)
      */
 
     if ((mode & UUID_MAKE_MC) || (uuid->mac[0] & BM_OCTET(1,0,0,0,0,0,0,0))) {
-        /* generate random IEEE 802 local multicast MAC address */
-        if (prng_data(uuid->prng, (void *)&(uuid->obj.node), sizeof(uuid->obj.node)) != PRNG_RC_OK)
-            return UUID_RC_INT;
-        uuid->obj.node[0] |= IEEE_MAC_MCBIT;
-        uuid->obj.node[0] |= IEEE_MAC_LOBIT;
+        /* use random IEEE 802 local multicast MAC address */
+        memcpy(uuid->obj.node, uuid->mac_mc, sizeof(uuid->mac));
     }
     else {
         /* use real regular MAC address */
