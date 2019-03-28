@@ -993,8 +993,11 @@ static uuid_rc_t uuid_make_v1(uuid_t *uuid, unsigned int mode, va_list ap)
      */
 
     if (mode & UUID_MAKE_MC) {
-        /* use random IEEE 802 local multicast MAC address */
-        memcpy(uuid->obj.node, uuid->mac_mc, sizeof(uuid->mac));
+        /* generate random IEEE 802 local multicast MAC address */
+        if (prng_data(uuid->prng, (void *)&(uuid->obj.node), sizeof(uuid->obj.node)) != PRNG_RC_OK)
+            return UUID_RC_INT;
+        uuid->obj.node[0] |= IEEE_MAC_MCBIT;
+        uuid->obj.node[0] |= IEEE_MAC_LOBIT;
     }
     else {
         /* use real regular MAC address */
